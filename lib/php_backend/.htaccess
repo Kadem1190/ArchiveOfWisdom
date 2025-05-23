@@ -1,0 +1,16 @@
+# Prevent PHP errors from being displayed as HTML
+php_flag display_errors off
+php_value error_reporting 0
+
+# Force PHP to return JSON even when there's an error
+php_flag display_startup_errors off
+
+# Set the correct content type for all PHP files
+<FilesMatch "\.php$">
+    Header set Content-Type "application/json"
+</FilesMatch>
+
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type"
