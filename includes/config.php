@@ -26,3 +26,20 @@ try {
 define('SITE_NAME', 'Library Management System');
 define('ADMIN_EMAIL', 'admin@library.com');
 define('ITEMS_PER_PAGE', 10);
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('DEFAULT_BORROW_DAYS', 14);
+define('MAX_BORROW_BOOKS', 3);
+define('FINE_PER_DAY', 1000); // Fine in rupiah per day
+
+// Role definitions
+define('ROLE_ADMIN', 'admin');
+define('ROLE_STAFF', 'staff');
+define('ROLE_MEMBER', 'member');
+
+// Session configuration
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
+    session_start();
+}

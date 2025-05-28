@@ -2,13 +2,27 @@
 /**
  * Log activity to the logs table
  */
-function logActivity($details, $userId = null, $tableName = null, $operation = null, $recordId = null) {
+function logActivity($action, $userId = null, $tableName = null, $recordId = null, $oldValues = null, $newValues = null) {
     global $pdo;
     
     try {
-        $stmt = $pdo->prepare("INSERT INTO logs (table_name, operation, record_id, user_id, details, log_time) 
-                              VALUES (?, ?, ?, ?, ?, NOW())");
-        $stmt->execute([$tableName, $operation, $recordId, $userId, $details]);
+        $stmt = $pdo->prepare("INSERT INTO logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        
+        $stmt->execute([
+            $userId, 
+            $action, 
+            $tableName, 
+            $recordId, 
+            $oldValues ? json_encode($oldValues) : null,
+            $newValues ? json_encode($newValues) : null,
+            $ipAddress,
+            $userAgent
+        ]);
+        
         return true;
     } catch (PDOException $e) {
         error_log("Error logging activity: " . $e->getMessage());
@@ -287,4 +301,125 @@ function getDashboardCounts() {
             'pending_registrations' => 0
         ];
     }
+}
+
+/**
+ * Get admin dashboard data
+ */
+function getAdminDashboardData() {
+    global $pdo;
+    
+    try {
+        $data = [];
+        
+        // User counts by role
+        $stmt = $pdo->query("SELECT p_role, COUNT(*) as count FROM users GROUP BY p_role");
+        $roleCounts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        
+        $data['total_users'] = array_sum($roleCounts);
+        $data['admin_count'] = $roleCounts['admin'] ?? 0;
+        $data['staff_count'] = $roleCounts['staff'] ?? 0;
+        $data['member_count'] = $roleCounts['member'] ?? 0;
+        
+        // Book statistics
+        $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(available_stock) as available FROM books");
+        $bookStats = $stmt->fetch();
+        $data['total_books'] = $bookStats['total'];
+        $data['available_books'] = $bookStats['available'];
+        
+        // Borrowing statistics
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE status = 'borrowed'");
+        $data['active_borrowings'] = $stmt->fetch()['count'];
+        
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE status = 'overdue'");
+        $data['overdue_borrowings'] = $stmt->fetch()['count'];
+        
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE MONTH(borrow_date) = MONTH(CURRENT_DATE()) AND YEAR(borrow_date) = YEAR(CURRENT_DATE())");
+        $data['monthly_borrowings'] = $stmt->fetch()['count'];
+        
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM users WHERE status = 'inactive' AND p_role = 'member'");
+        $data['pending_registrations'] = $stmt->fetch()['count'];
+        
+        // Recent activities
+        $stmt = $pdo->prepare("SELECT l.*, u.username FROM logs l 
+                              LEFT JOIN users u ON l.user_id = u.user_id 
+                              ORDER BY l.created_at DESC LIMIT 10");
+        $stmt->execute();
+        $data['recent_activities'] = $stmt->fetchAll();
+        
+        return $data;
+    } catch (PDOException $e) {
+        error_log("Error getting admin dashboard data: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Get staff dashboard data
+ */
+function getStaffDashboardData() {
+    global $pdo;
+    
+    try {
+        $data = [];
+        
+        // Today's statistics
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE DATE(created_at) = CURDATE() AND status = 'borrowed'");
+        $data['today_borrowings'] = $stmt->fetch()['count'];
+        
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE DATE(updated_at) = CURDATE() AND status = 'returned'");
+        $data['today_returns'] = $stmt->fetch()['count'];
+        
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE DATE(due_date) = CURDATE() AND status = 'borrowed'");
+        $data['due_today'] = $stmt->fetch()['count'];
+        
+        // Recent transactions
+        $stmt = $pdo->prepare("SELECT b.*, bk.title as book_title, a.name as member_name 
+                              FROM borrowings b
+                              JOIN books bk ON b.book_id = bk.book_id
+                              JOIN anggota a ON b.anggota_id = a.anggota_id
+                              ORDER BY b.created_at DESC LIMIT 5");
+        $stmt->execute();
+        $data['recent_transactions'] = $stmt->fetchAll();
+        
+        return $data;
+    } catch (PDOException $e) {
+        error_log("Error getting staff dashboard data: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Get books for member view
+ */
+function getMemberBooks($search = '') {
+    global $pdo;
+    
+    try {
+        $query = "SELECT * FROM books WHERE available_stock > 0";
+        $params = [];
+        
+        if (!empty($search)) {
+            $query .= " AND (title LIKE ? OR author LIKE ? OR category LIKE ?)";
+            $searchParam = "%$search%";
+            $params = [$searchParam, $searchParam, $searchParam];
+        }
+        
+        $query .= " ORDER BY title";
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting member books: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Format date and time
+ */
+function formatDateTime($datetime) {
+    return date('d M Y H:i', strtotime($datetime));
 }

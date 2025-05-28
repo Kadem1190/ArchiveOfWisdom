@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $errorMessage = "Username already exists.";
                     } else {
                         // Hash password
-                        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                        $passwordHash = password($password, PASSWORD_DEFAULT);
                         
                         // Create anggota record first (required for foreign key)
                         $stmt = $pdo->prepare("INSERT INTO anggota (name, nim, class, gender, date_of_birth) 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $anggotaId = $pdo->lastInsertId();
                         
                         // Insert admin user
-                        $stmt = $pdo->prepare("INSERT INTO users (anggota_id, username, password_hash, full_name, role, status, registration_status, created_at) 
+                        $stmt = $pdo->prepare("INSERT INTO users (anggota_id, username, password, full_name, role, status, registration_status, created_at) 
                                               VALUES (?, ?, ?, ?, 'admin', 'active', 'approved', NOW())");
                         $stmt->execute([$anggotaId, $username, $passwordHash, $fullName]);
                         
@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Update admin user
                     if (!empty($password)) {
                         // Update with new password
-                        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-                        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, password_hash = ? WHERE user_id = ?");
+                        $passwordHash = password($password, PASSWORD_DEFAULT);
+                        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, password = ? WHERE user_id = ?");
                         $stmt->execute([$fullName, $passwordHash, $adminId]);
                     } else {
                         // Update without changing password

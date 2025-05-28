@@ -1,5 +1,7 @@
 <?php
 $pageTitle = 'Dashboard';
+$role = $_SESSION['p_role'] ?? '';
+$username = $_SESSION['username'] ?? '';
 
 // Update overdue borrowings
 updateOverdueBorrowings();
@@ -41,8 +43,59 @@ try {
     <h1 class="h2">Dashboard</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <a href="index.php?page=users" class="btn btn-sm btn-outline-secondary">Manage Users</a>
-            <a href="index.php?page=books" class="btn btn-sm btn-outline-secondary">Manage Books</a>
+            <span class="badge bg-primary"><?php echo ucfirst($role); ?> Panel</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Welcome, <?php echo htmlspecialchars($username); ?>!</h5>
+                <p class="card-text">You are logged in as: <strong><?php echo ucfirst($role); ?></strong></p>
+                
+                <?php if ($role === 'admin'): ?>
+                    <p>As an admin, you have full access to the system.</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="index.php?page=users" class="btn btn-primary">Manage Users</a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="index.php?page=books" class="btn btn-success">Manage Books</a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="index.php?page=borrowings" class="btn btn-info">View Borrowings</a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="index.php?page=statistics" class="btn btn-warning">View Statistics</a>
+                        </div>
+                    </div>
+                <?php elseif ($role === 'staff'): ?>
+                    <p>As staff, you can manage members and borrowing transactions.</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="index.php?page=members" class="btn btn-primary">Add Members</a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="index.php?page=borrowings" class="btn btn-success">Manage Borrowings</a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="index.php?page=books" class="btn btn-info">View Books</a>
+                        </div>
+                    </div>
+                <?php elseif ($role === 'member'): ?>
+                    <p>Welcome! You can browse books and view your borrowing history.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="index.php?page=books" class="btn btn-primary">Browse Books</a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="index.php?page=my-borrowings" class="btn btn-success">My Borrowings</a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
@@ -52,6 +105,7 @@ try {
 <?php endif; ?>
 
 <!-- Stats Cards -->
+<?php if ($role === 'admin'): ?>
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
         <div class="card dashboard-card h-100 border-primary">
@@ -150,9 +204,11 @@ try {
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <div class="row">
     <!-- Recent Borrowings -->
+    <?php if ($role === 'admin' || $role === 'staff'): ?>
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-white">
@@ -198,8 +254,10 @@ try {
             </div>
         </div>
     </div>
+    <?php endif; ?>
     
     <!-- Pending Registrations -->
+    <?php if ($role === 'admin'): ?>
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-white">
@@ -245,5 +303,5 @@ try {
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </div>
-
