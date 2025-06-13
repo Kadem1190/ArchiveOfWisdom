@@ -4,13 +4,16 @@ This is the admin panel for the Library Management System, designed to manage us
 
 ## Installation
 
-1. Clone or download this repository to your web server directory (e.g., `htdocs` for XAMPP).
-2. Make sure your web server (Apache) and MySQL are running.
-3. Open your browser and navigate to `http://localhost/admin_panel/install.php` to set up the database.
-4. After successful installation, you can log in with the default admin credentials:
+1. Clone or download lib-server and admin_panel branch  to your web server directory (e.g., `htdocs` for XAMPP).
+2. Clone or download main branch to your Documents (this is the flutter app)
+3. Make sure your web server (Apache) and MySQL are running.
+4. Import the database on the main branch
+5. Open your browser and navigate to `http://localhost/admin_panel/install.php` to set up the database.
+6. Use `flutter run ` to run the app on your phone (make sure adb is connected)
+7. After successful installation, you can log in with the default admin credentials:
    - Username: `admin`
    - Password: `admin123`
-5. It's recommended to change the default password after your first login.
+8. It's recommended to change the default password after your first login.
 
 ## Features
 
