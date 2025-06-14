@@ -313,7 +313,7 @@ function getAdminDashboardData() {
         $data = [];
         
         // User counts by role
-        $stmt = $pdo->query("SELECT p_role, COUNT(*) as count FROM users GROUP BY p_role");
+        $stmt = $pdo->query("SELECT role, COUNT(*) as count FROM users GROUP BY role");
         $roleCounts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         
         $data['total_users'] = array_sum($roleCounts);
@@ -337,7 +337,7 @@ function getAdminDashboardData() {
         $stmt = $pdo->query("SELECT COUNT(*) as count FROM borrowings WHERE MONTH(borrow_date) = MONTH(CURRENT_DATE()) AND YEAR(borrow_date) = YEAR(CURRENT_DATE())");
         $data['monthly_borrowings'] = $stmt->fetch()['count'];
         
-        $stmt = $pdo->query("SELECT COUNT(*) as count FROM users WHERE status = 'inactive' AND p_role = 'member'");
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM users WHERE status = 'inactive' AND role = 'member'");
         $data['pending_registrations'] = $stmt->fetch()['count'];
         
         // Recent activities

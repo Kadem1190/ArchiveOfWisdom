@@ -8,14 +8,14 @@ require_once 'functions.php';
  * Check if user is logged in
  */
 function isLoggedIn() {
-    return isset($_SESSION['user_id']) && isset($_SESSION['p_role']);
+    return isset($_SESSION['user_id']) && isset($_SESSION['role']);
 }
 
 /**
  * Check if user has specific role
  */
 function hasRole($role) {
-    return isLoggedIn() && $_SESSION['p_role'] === $role;
+    return isLoggedIn() && $_SESSION['role'] === $role;
 }
 
 /**
@@ -23,7 +23,7 @@ function hasRole($role) {
  */
 function hasAnyRole($roles) {
     if (!isLoggedIn()) return false;
-    return in_array($_SESSION['p_role'], $roles);
+    return in_array($_SESSION['role'], $roles);
 }
 
 /**
@@ -73,7 +73,7 @@ function loginUser($username, $password) {
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['p_role'] = $user['p_role'];
+            $_SESSION['role'] = $user['role'];
             $_SESSION['anggota_id'] = $user['anggota_id'];
             
             return true;
@@ -90,7 +90,7 @@ function loginUser($username, $password) {
  * Get navigation menu based on role
  */
 function getNavigationMenu() {
-    $role = $_SESSION['p_role'] ?? '';
+    $role = $_SESSION['role'] ?? '';
     $menu = [];
     
     switch ($role) {

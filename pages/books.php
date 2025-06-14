@@ -1,6 +1,5 @@
 <?php
 $pageTitle = 'Books Management';
-define('UPLOAD_DIR', __DIR__ . '/../assets/'); // or your preferred upload directory
 // Process form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {

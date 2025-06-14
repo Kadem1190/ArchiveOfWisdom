@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'Dashboard';
-$role = $_SESSION['p_role'] ?? '';
+$role = $_SESSION['role'] ?? '';
 $username = $_SESSION['username'] ?? '';
 
 // Update overdue borrowings

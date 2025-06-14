@@ -12,7 +12,7 @@ if (!isLoggedIn()) {
 
 // Get current page
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$role = $_SESSION['p_role'];
+$role = $_SESSION['role'];
 
 // Define allowed pages for each role
 $allowedPages = [
